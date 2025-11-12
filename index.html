@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>Relatório de Campo - Sistema Eletricistas</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos para o botão de material personalizado */
+        .custom-material-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+            min-width: 40px;
+        }
+        
+        .custom-material-btn:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .custom-material-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Ajustar layout da linha de materiais */
+        .material-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Estilo do campo de material para ficar igual aos selects */
+        .material-select {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            color: #333;
+            transition: border-color 0.3s ease;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px 12px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        .material-select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .material-select:hover {
+            border-color: #bbb;
+        }
+        
+        /* Estilo do campo de quantidade */
+        .quantity-input {
+            width: 80px;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            color: #333;
+            transition: border-color 0.3s ease;
+            text-align: center;
+        }
+        
+        .quantity-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .quantity-input:hover {
+            border-color: #bbb;
+        }
+        
+        /* Estilos para as subseções de materiais */
+        .materials-subsection {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .materials-subsection h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        .custom-material-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .custom-material-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+        
+        .custom-material-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .custom-material-input:hover {
+            border-color: #bbb;
+        }
+        
+        .remove-custom-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 40px;
+        }
+        
+        .remove-custom-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .material-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .custom-material-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .custom-material-btn {
+                margin: 5px 0;
+                align-self: flex-start;
+            }
+            
+            .quantity-input {
+                width: 100%;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- Tela Inicial -->
+    <div class="container" id="homeScreen">
+        <header class="home-header">
+            <h1>📋 INFORME INCIDÊNCIAS</h1>
+            <p>Sistema de Relatórios de Campo - Eletricistas</p>
+        </header>
+        <div class="options-container">
+            <h2>Selecione o tipo de ocorrência:</h2>
+            <div class="incident-options">
+                <button class="incident-btn trafo-btn" onclick="selectIncidentType('TRAFO')">
+                    <div class="btn-icon">⚡</div>
+                    <div class="btn-text">TRAFO</div>
+                    <div class="btn-subtitle">Transformador</div>
+                </button>
+                <button class="incident-btn poste-btn" onclick="selectIncidentType('POSTE')">
+                    <div class="btn-icon">📡</div>
+                    <div class="btn-text">POSTE</div>
+                    <div class="btn-subtitle">Poste Elétrico</div>
+                </button>
+                <button class="incident-btn vegetacao-btn" onclick="selectIncidentType('VEGETAÇÃO')">
+                    <div class="btn-icon">🌳</div>
+                    <div class="btn-text">VEGETAÇÃO</div>
+                    <div class="btn-subtitle">Vegetação</div>
+                </button>
+            </div>
+        </div>
+        <footer class="home-footer">
+            <p>Sistema desenvolvido para relatórios de campo</p>
+        </footer>
+    </div>
+
+    <!-- Tela do Formulário -->
+    <div class="container" id="formScreen" style="display: none;">
+        <header>
+            <div class="header-top">
+                <button class="back-btn" onclick="voltarHome()">← Voltar</button>
+                <div class="incident-type-indicator" id="incidentTypeIndicator">
+                    <span class="type-icon" id="typeIcon">⚡</span>
+                    <span class="type-text" id="typeText">TRAFO</span>
+                </div>
+            </div>
+            <h1>📋 RELATÓRIO DE PENDÊNCIA</h1>
+            <p>Sistema de Relatórios de Campo - Eletricistas</p>
+        </header>
+
+        <form id="relatorioForm">
+            <div class="form-section">
+                <h2>👥 Equipe</h2>
+                
+                <div class="form-group">
+                    <label for="equipeNecessaria">*EQUIPE NECESSÁRIA -*</label>
+                    <select id="equipeNecessaria" name="equipeNecessaria" required>
+                        <option value="">Selecione...</option>
+                        <option value="EMERGÊNCIAL">EMERGÊNCIAL</option>
+                        <option value="MANUTENÇÃO PESADA">MANUTENÇÃO PESADA</option>
+                        <option value="LINHA VIVA">LINHA VIVA</option>
+                        <option value="EQUIPE DE PODAS">EQUIPE DE PODAS</option>
+                        <option value="EMERGENCIAL & MANUTENÇÃO PESADA">EMERGENCIAL & MANUTENÇÃO PESADA</option>
+                        <option value="EMERGENCIAL & LINHA VIVA">EMERGENCIAL & LINHA VIVA</option>
+                        <option value="EMERGENCIAL & EQUIPE DE PODAS">EMERGENCIAL & EQUIPE DE PODAS</option>
+                        <option value="MANUTENÇÃO PESADA & LINHA VIVA">MANUTENÇÃO PESADA & LINHA VIVA</option>
+                        <option value="MANUTENÇÃO PESADA & EQUIPE DE PODAS">MANUTENÇÃO PESADA & EQUIPE DE PODAS</option>
+                        <option value="LINHA VIVA & EQUIPE DE PODAS">LINHA VIVA & EQUIPE DE PODAS</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="operador">*OPERADOR(A) -*</label>
+                    <select id="operador" name="operador" required>
+                        <option value="">Selecione...</option>
+                        <option value="DANIEL MIRANDA">DANIEL MIRANDA</option>
+                        <option value="VITÓRIA FERNANDES">VITÓRIA FERNANDES</option>
+                        <option value="JEAN CHACON">JEAN CHACON</option>
+                        <option value="SÁVIO FREITAS">SÁVIO FREITAS</option>
+                        <option value="PEDRO SAMPAIO">PEDRO SAMPAIO</option>
+                        <option value="ASSIS CRISÓSTOMO">ASSIS CRISÓSTOMO</option>
+                        <option value="ROGÉRIO ROCHA">ROGÉRIO ROCHA</option>
+                        <option value="ROBERTO PEREIRA">ROBERTO PEREIRA</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="primeiroRecurso">*VIATURA -*</label>
+                    <input type="text" id="primeiroRecurso" name="primeiroRecurso" placeholder="Digite a viatura necessária" required>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>📍 Identificação e Localização</h2>
+                
+                <div class="form-group">
+                    <label for="descricao">*DEFEITOS -*</label>
+                    <input list="defeitos-list" id="descricao" name="descricao" placeholder="Digite ou selecione o defeito" required>
+                    <datalist id="defeitos-list">
+                        <option value="APRUMAR POSTE">
+                        <option value="CABOS DEGRADADOS">
+                        <option value="CABOS PARTIDOS">
+                        <option value="CABOS ROUBADOS">
+                        <option value="POSTE ABALROADO">
+                        <option value="POSTE ABALROADO E REPOSIÇÃO DE CABOS">
+                        <option value="POSTE ABALROADO E REPOSIÇÃO DE TRAFO">
+                        <option value="POSTE DANIFICADO">
+                        <option value="TRAFO AVARIADO">
+                        <option value="TRAFO COM VAZAMENTO DE ÓLEO">
+                        <option value="TRAFO QUEIMADO">
+                        <option value="TRAFO ROUBADO">
+                        <option value="TRAFO SOBRECARREGADO">
+                        <option value="JUMP PARTIDO">
+                        <option value="TRAVESSIA EM AREA ALAGADA">
+                        <option value="VEGETAÇÃO SOBRE A REDE">
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="causa">*CAUSA -*</label>
+                    <select id="causa" name="causa" required>
+                        <option value="">Selecione...</option>
+                        <option value="ANIMAL">ANIMAL</option>
+                        <option value="CURTO CIRCUITO">CURTO CIRCUITO</option>
+                        <option value="DEFEITO NO TRANSFORMADOR">DEFEITO NO TRANSFORMADOR</option>
+                        <option value="DEGRADAÇÃO">DEGRADAÇÃO</option>
+                        <option value="DEGRADAÇÃO/MARESIA">DEGRADAÇÃO/MARESIA</option>
+                        <option value="DESCARGA ATMOSFÉRICA">DESCARGA ATMOSFÉRICA</option>
+                        <option value="ISOLADOR COM DEFEITO">ISOLADOR COM DEFEITO</option>
+                        <option value="NÃO IDENTIFICADA">NÃO IDENTIFICADA</option>
+                        <option value="ROUBO">ROUBO</option>
+                        <option value="SOBRECARGA">SOBRECARGA</option>
+                        <option value="VEÍCULO">VEÍCULO</option>
+                        <option value="VEGETAÇÃO">VEGETAÇÃO</option>
+                        <option value="JUMP PARTIDO">JUMP PARTIDO</option>
+                        <option value="CONDUTOR PARTIDO">CONDUTOR PARTIDO</option>
+                        <option value="POSTE ABALROADO">POSTE ABALROADO</option>
+                        <option value="ÁRVORE TOMBADA">ÁRVORE TOMBADA</option>
+                        <option value="DEFEITO EM CHAVE FUSÍVEL">DEFEITO EM CHAVE FUSÍVEL</option>
+                        <option value="TC/TP AVARIADO">TC/TP AVARIADO</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="incidencia">Nº INCIDÊNCIA:</label>
+                    <input type="text" id="incidencia" name="incidencia" placeholder="Digite o número da incidência">
+                </div>
+
+                <div class="form-group">
+                    <label for="dataHora">*DATA/HORA -*</label>
+                    <div class="datetime-container">
+                        <button type="button" id="btnHoje" class="btn-hoje">ADICIONAR HORA/DATA</button>
+                        <input type="text" id="dataHora" name="dataHora" readonly required placeholder="Clique no botão para definir">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="endereco">ENDEREÇO:</label>
+                    <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço completo">
+                </div>
+
+                <div class="form-group">
+                    <label for="municipio">*MUNICÍPIO -*</label>
+                    <select id="municipio" name="municipio" required>
+                        <option value="">Selecione...</option>
+                        <option value="ARARENDA">ARARENDA</option>
+                        <option value="BANABUIU">BANABUIU</option>
+                        <option value="BOA VIAGEM">BOA VIAGEM</option>
+                        <option value="CANINDE">CANINDE</option>
+                        <option value="CARIDADE">CARIDADE</option>
+                        <option value="CATUNDA">CATUNDA</option>
+                        <option value="CHORO">CHORO</option>
+                        <option value="CRATEUS">CRATEUS</option>
+                        <option value="HIDROLANDIA">HIDROLANDIA</option>
+                        <option value="IBARETAMA">IBARETAMA</option>
+                        <option value="INDEPENDENCIA">INDEPENDENCIA</option>
+                        <option value="IPAPORANGA">IPAPORANGA</option>
+                        <option value="IPU">IPU</option>
+                        <option value="IPUEIRAS">IPUEIRAS</option>
+                        <option value="ITATIRA">ITATIRA</option>
+                        <option value="MADALENA">MADALENA</option>
+                        <option value="MONSENHOR TABOSA">MONSENHOR TABOSA</option>
+                        <option value="NOVA RUSSAS">NOVA RUSSAS</option>
+                        <option value="NOVO ORIENTE">NOVO ORIENTE</option>
+                        <option value="PARAMOTI">PARAMOTI</option>
+                        <option value="PIRES FERREIRA">PIRES FERREIRA</option>
+                        <option value="PORANGA">PORANGA</option>
+                        <option value="QUIXADA">QUIXADA</option>
+                        <option value="QUIXERAMOBIM">QUIXERAMOBIM</option>
+                        <option value="RERIUTABA">RERIUTABA</option>
+                        <option value="SANTA QUITERIA">SANTA QUITERIA</option>
+                        <option value="TAMBORIL">TAMBORIL</option>
+                        <option value="VARJOTA">VARJOTA</option>
+                        <option value="JAGUARETAMA">JAGUARETAMA</option>
+                        <option value="CAUCAIA">CAUCAIA</option>
+                        <option value="CROATÁ">CROATÁ</option>
+                        <option value="MARANGUAPE">MARANGUAPE</option>
+                        <option value="QUITERIANOPOLIS">QUITERIANOPOLIS</option>
+                        <option value="CARIRÉ">CARIRÉ</option>
+                        <option value="TAUÁ">TAUÁ</option>
+                        <option value="GENERAL SAMPAIO">GENERAL SAMPAIO</option>
+                        <option value="PENTECOSTE">PENTECOSTE</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="legenda">CSI:</label>
+                    <input type="text" id="legenda" name="legenda" placeholder="Digite o CSI">
+                </div>
+
+                <div class="form-group">
+                    <label for="potenciaTrafo">*POTÊNCIA DO TRAFO -*</label>
+                    <input type="text" id="potenciaTrafo" name="potenciaTrafo" placeholder="Digite a potência do trafo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="alimentador">*ALIMENTADOR:*</label>
+                    <input type="text" id="alimentador" name="alimentador" placeholder="Digite o alimentador" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="elemCorte">ELEMENTO DE CORTE:</label>
+                    <input type="text" id="elemCorte" name="elemCorte" placeholder="Digite o elemento de corte">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>🔧 Dados Técnicos</h2>
+                
+                <div class="form-group">
+                    <label for="acesso">*ACESSOS -*</label>
+                    <select id="acesso" name="acesso" required>
+                        <option value="">Selecione...</option>
+                        <option value="ACESSO APENAS PARA HILUX">ACESSO APENAS PARA HILUX</option>
+                        <option value="ACESSO RUIM (NECESSÁRIO ABRIR CERCA E EXECUTAR PODAS)">ACESSO RUIM (NECESSÁRIO ABRIR CERCA E EXECUTAR PODAS)</option>
+                        <option value="ACESSO RUIM (NECESSÁRIO ABRIR CERCA)">ACESSO RUIM (NECESSÁRIO ABRIR CERCA)</option>
+                        <option value="ACESSO RUIM (NECESSÁRIO EXECUTAR PODAS)">ACESSO RUIM (NECESSÁRIO EXECUTAR PODAS)</option>
+                        <option value="ACESSO RUIM, BEIRA DE RIO">ACESSO RUIM, BEIRA DE RIO</option>
+                        <option value="ACESSO RUIM, LAMA">ACESSO RUIM, LAMA</option>
+                        <option value="ACESSO RUIM, MATA FECHADA">ACESSO RUIM, MATA FECHADA</option>
+                        <option value="BOM ACESSO">BOM ACESSO</option>
+                        <option value="SEM ACESSO">SEM ACESSO</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="grampoLinhaViva">*POSSUI GRAMPO DE LINHA VIVA? -*</label>
+                    <select id="grampoLinhaViva" name="grampoLinhaViva" required>
+                        <option value="">Selecione...</option>
+                        <option value="SIM">SIM</option>
+                        <option value="NÃO">NÃO</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="estrutura">*ESTRUTURAS -*</label>
+                    <select id="estrutura" name="estrutura" required>
+                        <option value="">Selecione...</option>
+                        <option value="150/8">150/8</option>
+                        <option value="150/9">150/9</option>
+                        <option value="150/10">150/10</option>
+                        <option value="300/9">300/9</option>
+                        <option value="300/10">300/10</option>
+                        <option value="300/10,5">300/10,5</option>
+                        <option value="600/10,5">600/10,5</option>
+                        <option value="600/11">600/11</option>
+                        <option value="600/12">600/12</option>
+                        <option value="1000/12">1000/12</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="redePrimaria">*TIPOS DE REDES -*</label>
+                    <select id="redePrimaria" name="redePrimaria" required>
+                        <option value="">Selecione...</option>
+                        <option value="MRT">MRT</option>
+                        <option value="MONOFÁSICA">MONOFÁSICA</option>
+                        <option value="BIFÁSICA">BIFÁSICA</option>
+                        <option value="TRIFÁSICA">TRIFÁSICA</option>
+                        <option value="MONOFÁSICA REDE NUA">MONOFÁSICA REDE NUA</option>
+                        <option value="TRIFÁSICA REDE RUA">TRIFÁSICA REDE RUA</option>
+                        <option value="MONOFÁSICA REDE MULT">MONOFÁSICA REDE MULT</option>
+                        <option value="TRIFÁSICA REDE MULTIPLE">TRIFÁSICA REDE MULTIPLE</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="redeSecundaria">*NÍVEL DE TENSÃO -*</label>
+                    <select id="redeSecundaria" name="redeSecundaria" required>
+                        <option value="">Selecione...</option>
+                        <option value="BAIXA TENSÃO">BAIXA TENSÃO</option>
+                        <option value="MÉDIA TENSÃO">MÉDIA TENSÃO</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="afetacao">AFETAÇÃO:</label>
+                    <input type="text" id="afetacao" name="afetacao" placeholder="Digite a afetação">
+                </div>
+
+                <div class="form-group">
+                    <label for="afetacaoElementoCorte">AFETAÇÃO DO ELEMENTO DE CORTE:</label>
+                    <input type="text" id="afetacaoElementoCorte" name="afetacaoElementoCorte" placeholder="Digite a afetação do elemento de corte">
+                </div>
+
+                <div class="form-group">
+                    <label for="observacoes">OBSERVAÇÕES:</label>
+                    <textarea id="observacoes" name="observacoes" placeholder="Digite suas observações técnicas" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section photos-section">
+                <h2>📷 Envio das Imagens em Campo</h2>
+                
+                <div class="form-group">
+                    <label for="photoUpload">Adicionar Fotos:</label>
+                    <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+                    <button type="button" class="upload-photo-btn" onclick="document.getElementById('photoUpload').click()">
+                        📸 Selecionar Fotos
+                    </button>
+                    <p class="photo-info">Você pode selecionar múltiplas fotos</p>
+                </div>
+
+                <div id="photoPreviewContainer" class="photo-preview-container">
+                    <!-- Fotos aparecerão aqui -->
+                </div>
+            </div>
+
+            <div class="form-section materials-section">
+                <h2>📦 Materiais Necessários</h2>
+                
+                <div class="materials-instruction">
+                    <p><strong>COMO FUNCIONA:</strong> Escolha os materiais usando uma das opções abaixo. A primeira opção é por meio de seleção dos itens, se achar difícil, pode usar a segunda opção de digitar. Depois coloque a quantidade.</p>
+                </div>
+                
+                <div class="materials-subsection">
+                    <h3>📋 Materiais da Lista (Opção selecionável)</h3>
+                    <div class="materials-multiple-selection">
+                        <div id="materialsCheckboxContainer" class="materials-checkbox-container"></div>
+                        <button type="button" id="confirmSelectionBtn" class="confirm-selection-btn">✅ Confirmar Seleção</button>
+                    </div>
+                    <div id="materialsContainer"></div>
+                </div>
+                
+                <div class="materials-subsection">
+                    <h3>✏️ Materiais da Lista (Opção digitável)</h3>
+                    <div id="customMaterialsContainer"></div>
+                    <button type="button" id="addCustomMaterialBtn" class="add-material-btn">+ Adicionar Material Personalizado</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="outrosMateriais">OUTROS:</label>
+                    <input type="text" id="outrosMateriais" name="outrosMateriais" placeholder="Descreva outros materiais não listados">
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" id="copiarBtn" class="action-btn copiar-btn">📋 Copiar Texto</button>
+                <button type="button" id="pdfBtn" class="action-btn pdf-btn">📄 Baixar PDF</button>
+                <button type="button" id="limparBtn" class="action-btn limpar-btn">🗑️ Limpar</button>
+            </div>
+            
+            <div class="button-instructions">
+                <div class="instruction-item">
+                    <strong>📋 Copiar Texto:</strong> Clica aqui para copiar o relatório completo. Depois vai no WhatsApp da bancada, aperta e segura no espaço de digitação e escolhe COLAR. Pronto!
+                </div>
+                <div class="instruction-item">
+                    <strong>📄 Baixar PDF:</strong> Clica aqui para salvar o arquivo no seu celular. Vai aparecer na pasta de Downloads. Depois é só mandar pelo WhatsApp da bancada.
+                </div>
+                <div class="instruction-item">
+                    <strong>🗑️ Limpar:</strong> Clica aqui para apagar tudo e começar um relatório novo.
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Configuração global
+        let materialCounter = 0;
+        let incidentType = 'TRAFO';
+        let uploadedPhotos = []; // Array para armazenar fotos
+        let textoCopiado = false; // Controla se o texto foi copiado
+        
+        // Lista de materiais que usam "TAMANHO" ao invés de "QUANTIDADE"
+        const cabosComTamanho = [
+            "CABO 10MM",
+            "CABO 16MM", 
+            "CABO 25MM PRÉ-REUNIDO MONOFÁSICO",
+            "CABO 25MM PRÉ-REUNIDO TRIFÁSICO",
+            "CABO 4 AWG",
+            "CABO 50MM PRÉ-REUNIDO MONOFÁSICO",
+            "CABO 50MM PRÉ-REUNIDO TRIFÁSICO",
+            "CABO 7/10"
+        ];
+
+        // Lista completa de materiais (versão atualizada)
+        let materiaisOptions = [
+            "ABRAÇADEIRA DE NYLON",
+            "ALÇA P/ CABO 4 AWG",
+            "ALÇA P/ CABO PRÉ-REUNIDO 25MM",
+            "ALÇA P/ CABO PRÉ-REUNIDO 50MM",
+            "ARAME PARA AMARRAÇÃO",
+            "ARMAÇÃO S1",
+            "ARMAÇÃO S2",
+            "ARMAÇÃO S3",
+            "ARMAÇÃO S4",
+            "ARUELAS QUADRADAS",
+            "ARUELAS REDOONDAS",
+            "CABO 10MM",
+            "CABO 16MM",
+            "CABO 25MM PRÉ-REUNIDO MONOFÁSICO",
+            "CABO 25MM PRÉ-REUNIDO TRIFÁSICO",
+            "CABO 4 AWG",
+            "CABO 50MM PRÉ-REUNIDO MONOFÁSICO",
+            "CABO 50MM PRÉ-REUNIDO TRIFÁSICO",
+            "CABO 7/10",
+            "CAIXA DE DERIVAÇÃO",
+            "CAIXA DE PROTEÇÃO",
+            "CHAVE FUSIVEL 17,5KV",
+            "CHAVE FUSIVEL 24KV",
+            "CHAVE SECCIONADORA  17,5KV",
+            "CHAVE SECCIONADORA  24KV",
+            "CONECTOR PERFURANTE",
+            "CONECTOR TIPO I",
+            "CONECTOR TIPO II",
+            "CONECTOR TIPO III",
+            "CONECTOR TIPO IV",
+            "CONECTOR TIPO V",
+            "CONECTOR TIPO VI",
+            "CONECTOR TIPO VII",
+            "CRUZETA BECO TOTAL",
+            "CRUZETA MEIO BECO",
+            "CRUZETA NORMAL",
+            "DISJUNTOR 100A",
+            "DISJUNTOR 125A",
+            "DISJUNTOR 32A",
+            "DISJUNTOR 40A",
+            "DISJUNTOR 50A",
+            "DISJUNTOR 63A",
+            "DISJUNTOR 70A",
+            "DISJUNTOR 80A",
+            "ELO 0,5H",
+            "ELO 10K",
+            "ELO 12K",
+            "ELO 15K",
+            "ELO 1H",
+            "ELO 20K",
+            "ELO 25K",
+            "ELO 2H",
+            "ELO 30K",
+            "ELO 3H",
+            "ELO 3K",
+            "ELO 40K",
+            "ELO 50K",
+            "ELO 5H",
+            "ELO 65K",
+            "ELO 6K",
+            "ELO 80K",
+            "ELO 8K",
+            "ESPAÇADORES",
+            "FENOLITE 17,5 KV",
+            "FENOLITE 24KV",
+            "FIO RIGIDO",
+            "ISOLADOR DE PINO",
+            "ISOLADOR DE SUSPENÇÃO",
+            "KIT FUSIVEL NH",
+            "KIT GRAMPO DE LINHA VIVA",
+            "LAÇO CABO 4 AWG",
+            "OLHAL",
+            "PARAFUSO 200MM",
+            "PARAFUSO 250MM",
+            "PARAFUSO 300MM",
+            "PARAFUSO 350MM",
+            "PARA-RAIOS",
+            "POSTE  DE CONCRETO600/12",
+            "POSTE DE CONCRETO 1000/12",
+            "POSTE DE CONCRETO 300/09",
+            "POSTE DE CONCRETO 300/12",
+            "POSTE DE CONCRETO 600/09",
+            "POSTE DE FIBRA 1000/12",
+            "POSTE DE FIBRA 300/09",
+            "POSTE DE FIBRA 300/12",
+            "POSTE DE FIBRA 600/12",
+            "ROUDANAS",
+            "TRAFO 10 KVA BIFÁSICO",
+            "TRAFO 10 KVA MRT",
+            "TRAFO 15 KVA BIFÁSICO",
+            "TRAFO 15 KVA MRT",
+            "TRAFO 15 KVA TRIFÁSICO",
+            "TRAFO 150 KVA TRIFÁSICO",
+            "TRAFO 30 KVA TRIFÁSICO",
+            "TRAFO 45 KVA TRIFÁSICO",
+            "TRAFO 5 KVA MRT",
+            "TRAFO 75 KVA TRIFÁSICO",
+            "VARONETE"
+        ];
+
+        // Selecionar tipo de incidente
+        function selectIncidentType(type) {
+            incidentType = type;
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('formScreen').style.display = 'block';
+            updateIncidentIndicator();
+            initializeForm();
+            window.scrollTo(0, 0);
+        }
+
+
+        // Voltar para tela inicial
+        function voltarHome() {
+            document.getElementById('formScreen').style.display = 'none';
+            document.getElementById('homeScreen').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // Atualizar indicador de tipo
+        function updateIncidentIndicator() {
+            const indicator = document.getElementById('incidentTypeIndicator');
+            const typeIcon = document.getElementById('typeIcon');
+            const typeText = document.getElementById('typeText');
+            
+            indicator.className = 'incident-type-indicator';
+            
+            switch(incidentType) {
+                case 'TRAFO':
+                    typeIcon.textContent = '⚡';
+                    typeText.textContent = 'TRAFO';
+                    indicator.classList.add('trafo');
+                    break;
+                case 'POSTE':
+                    typeIcon.textContent = '📡';
+                    typeText.textContent = 'POSTE';
+                    indicator.classList.add('poste');
+                    break;
+                case 'VEGETAÇÃO':
+                    typeIcon.textContent = '🌳';
+                    typeText.textContent = 'VEGETAÇÃO';
+                    indicator.classList.add('vegetacao');
+                    break;
+            }
+        }
+
+        // Inicializar formulário
+        function initializeForm() {
+            setupMaterialsCheckbox();
+            atualizarListaMateriais();
+            setupEventListeners();
+            updatePDFButtonState(); // Inicializar estado do botão PDF
+        }
+
+        // Configurar checkboxes de materiais
+        function setupMaterialsCheckbox() {
+            const container = document.getElementById('materialsCheckboxContainer');
+            container.innerHTML = '';
+            
+            materiaisOptions.forEach(material => {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                checkboxItem.innerHTML = `
+                    <input type="checkbox" id="material_${material.replace(/[^a-zA-Z0-9]/g, '_')}" value="${material}" class="material-checkbox">
+                    <label for="material_${material.replace(/[^a-zA-Z0-9]/g, '_')}">${material}</label>
+                `;
+                container.appendChild(checkboxItem);
+            });
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            document.getElementById('copiarBtn').addEventListener('click', copiarTexto);
+            document.getElementById('pdfBtn').addEventListener('click', baixarPDF);
+            document.getElementById('limparBtn').addEventListener('click', limparFormulario);
+            document.getElementById('confirmSelectionBtn').addEventListener('click', confirmarSelecaoMateriais);
+            document.getElementById('addCustomMaterialBtn').addEventListener('click', adicionarMaterialPersonalizado);
+            
+            const btnHoje = document.getElementById('btnHoje');
+            if (btnHoje) {
+                btnHoje.addEventListener('click', definirDataHoraAtual);
+            }
+
+            // Event listener para upload de fotos
+            const photoUpload = document.getElementById('photoUpload');
+            if (photoUpload) {
+                photoUpload.addEventListener('change', handlePhotoUpload);
+            }
+        }
+
+        // Gerenciar upload de fotos
+        function handlePhotoUpload(event) {
+            const files = Array.from(event.target.files);
+            
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const photoData = {
+                            name: file.name,
+                            data: e.target.result,
+                            file: file
+                        };
+                        
+                        uploadedPhotos.push(photoData);
+                        displayPhoto(photoData, uploadedPhotos.length - 1);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Limpar input para permitir reenvio da mesma foto
+            event.target.value = '';
+        }
+
+        // Exibir foto no preview
+        function displayPhoto(photoData, index) {
+            const container = document.getElementById('photoPreviewContainer');
+            
+            const photoItem = document.createElement('div');
+            photoItem.className = 'photo-preview-item';
+            photoItem.dataset.index = index;
+            
+            photoItem.innerHTML = `
+                <img src="${photoData.data}" alt="${photoData.name}">
+                <button type="button" class="photo-remove-btn" onclick="removePhoto(${index})">×</button>
+                <div class="photo-name">${photoData.name}</div>
+            `;
+            
+            container.appendChild(photoItem);
+        }
+
+        // Remover foto
+        function removePhoto(index) {
+            uploadedPhotos.splice(index, 1);
+            
+            // Recarregar preview
+            const container = document.getElementById('photoPreviewContainer');
+            container.innerHTML = '';
+            
+            uploadedPhotos.forEach((photo, idx) => {
+                displayPhoto(photo, idx);
+            });
+        }
+
+        // Atualizar lista de materiais
+        function atualizarListaMateriais() {
+            const selects = document.querySelectorAll('.material-select');
+            
+            selects.forEach(select => {
+                const valorAtual = select.value;
+                
+                // Limpar opções existentes (exceto a primeira)
+                while (select.children.length > 1) {
+                    select.removeChild(select.lastChild);
+                }
+                
+                // Adicionar todas as opções de materiais
+                materiaisOptions.forEach(material => {
+                    const option = document.createElement('option');
+                    option.value = material;
+                    option.textContent = material;
+                    select.appendChild(option);
+                });
+                
+                select.value = valorAtual;
+            });
+        }
+
+        // Confirmar seleção de materiais
+        function confirmarSelecaoMateriais() {
+            const checkboxes = document.querySelectorAll('.material-checkbox:checked');
+            const container = document.getElementById('materialsContainer');
+            
+            // Limpar container atual
+            container.innerHTML = '';
+            
+            if (checkboxes.length === 0) {
+                showMessage('❌ Selecione pelo menos um material!', 'error');
+                return;
+            }
+            
+            checkboxes.forEach(checkbox => {
+                materialCounter++;
+                const materialRow = document.createElement('div');
+                materialRow.className = 'material-row';
+                
+                // Verificar se é um cabo para usar "TAMANHO" ao invés de "QUANTIDADE"
+                const isCabo = cabosComTamanho.includes(checkbox.value);
+                const placeholder = isCabo ? "Tamanho" : "Qtd";
+                
+                materialRow.innerHTML = `
+                    <input type="text" class="material-display" value="${checkbox.value}" readonly>
+                    <input type="hidden" name="material_${materialCounter}" value="${checkbox.value}">
+                    <input type="number" class="quantity-input" name="quantity_${materialCounter}" placeholder="${placeholder}" min="1" required>
+                    <button type="button" class="remove-btn" onclick="removerMaterial(this)">X</button>
+                `;
+                
+                container.appendChild(materialRow);
+            });
+            
+            showMessage(`✅ ${checkboxes.length} material(is) adicionado(s)! Agora preencha as quantidades/tamanhos.`, 'success');
+        }
+
+        // Adicionar material (função mantida para compatibilidade)
+        function adicionarMaterial() {
+            // Esta função não é mais usada, mas mantida para compatibilidade
+        }
+
+        // Validar quantidades
+        function validarQuantidades() {
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            
+            for (let input of quantityInputs) {
+                if (!input.value || input.value.trim() === '' || parseInt(input.value) <= 0) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // Adicionar material personalizado
+        function adicionarMaterialPersonalizado() {
+            const container = document.getElementById('customMaterialsContainer');
+            const customRow = document.createElement('div');
+            customRow.className = 'custom-material-row';
+            
+            customRow.innerHTML = `
+                <input type="text" class="custom-material-input" placeholder="Digite o material personalizado" required>
+                <input type="number" class="quantity-input" placeholder="Qtd" min="1" required>
+                <button type="button" class="remove-custom-btn" onclick="removerMaterialPersonalizado(this)">X</button>
+            `;
+            
+            container.appendChild(customRow);
+            
+            // Adicionar event listeners para verificar se ambos os campos estão preenchidos
+            const materialInput = customRow.querySelector('.custom-material-input');
+            const quantityInput = customRow.querySelector('.quantity-input');
+            
+            function verificarCamposPreenchidos() {
+                if (materialInput.value.trim() !== '' && quantityInput.value.trim() !== '') {
+                    // Verificar se já existe uma próxima linha vazia
+                    const nextRow = customRow.nextElementSibling;
+                    if (!nextRow || (nextRow.querySelector('.custom-material-input').value === '' && nextRow.querySelector('.quantity-input').value === '')) {
+                        // Adicionar nova linha apenas se não há próxima linha vazia
+                        setTimeout(() => {
+                            adicionarMaterialPersonalizado();
+                        }, 100);
+                    }
+                }
+            }
+            
+            // Event listeners para ambos os campos
+            materialInput.addEventListener('input', verificarCamposPreenchidos);
+            quantityInput.addEventListener('input', verificarCamposPreenchidos);
+        }
+
+        // Remover material personalizado
+        function removerMaterialPersonalizado(button) {
+            const customRow = button.parentElement;
+            customRow.remove();
+        }
+
+
+        // Remover material
+        function removerMaterial(button) {
+            const materialRow = button.parentElement;
+            materialRow.remove();
+        }
+
+        // Coletar dados
+        function coletarDados() {
+            const form = document.getElementById('relatorioForm');
+            const formData = new FormData(form);
+            const dados = {};
+            
+            dados.tipoIncidente = incidentType;
+            
+            for (let [key, value] of formData.entries()) {
+                dados[key] = value;
+            }
+            
+            dados.materiais = [];
+            
+            // Coletar materiais da lista (seleção múltipla)
+            const materialRows = document.querySelectorAll('.material-row');
+            materialRows.forEach(row => {
+                const materialDisplay = row.querySelector('.material-display');
+                const quantityInput = row.querySelector('.quantity-input');
+                
+                if (materialDisplay && materialDisplay.value && quantityInput && quantityInput.value) {
+                    const material = materialDisplay.value;
+                    const quantity = quantityInput.value;
+                    
+                    // Verificar se é um cabo para usar "metros" ao invés de "unidades"
+                    if (cabosComTamanho.includes(material)) {
+                        dados.materiais.push(`${quantity} metros de ${material}`);
+                    } else {
+                        dados.materiais.push(`${quantity} unidades de ${material}`);
+                    }
+                }
+            });
+            
+            // Coletar materiais personalizados
+            const customMaterialInputs = document.querySelectorAll('.custom-material-input');
+            customMaterialInputs.forEach((input, index) => {
+                const customRow = input.parentElement;
+                const quantityInput = customRow.querySelector('.quantity-input');
+                if (input.value && quantityInput && quantityInput.value) {
+                    const material = input.value;
+                    const quantity = quantityInput.value;
+                    dados.materiais.push(`${quantity} unidades de ${material}`);
+                }
+            });
+            
+            // Adicionar campo "OUTROS:" se preenchido
+            const outrosMateriais = document.getElementById('outrosMateriais').value;
+            if (outrosMateriais && outrosMateriais.trim() !== '') {
+                dados.materiais.push(`OUTROS: ${outrosMateriais}`);
+            }
+            
+            return dados;
+        }
+
+        // Formatar texto para WhatsApp
+        function formatarTextoParaWhatsApp(dados) {
+            const dataFormatada = formatarData(dados.dataHora);
+            
+            let texto = `📋 *RELATÓRIO DE PENDÊNCIA - ${dados.tipoIncidente}*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 *IDENTIFICAÇÃO E LOCALIZAÇÃO:*
+• Descrição: ${dados.descricao || 'N/A'}
+• Causa: ${dados.causa || 'N/A'}
+• Nº Incidência: ${dados.incidencia || 'N/A'}
+• Data/Hora: ${dataFormatada}
+• Endereço: ${dados.endereco || 'N/A'}
+• Município: ${dados.municipio || 'N/A'}
+• CSI: ${dados.legenda || 'N/A'}
+• Potência do Trafo: ${dados.potenciaTrafo || 'N/A'}
+• Alimentador: ${dados.alimentador || 'N/A'}
+• Elem. de Corte: ${dados.elemCorte || 'N/A'}
+
+🔧 *DADOS TÉCNICOS:*
+• Acesso: ${dados.acesso || 'N/A'}
+• Grampo Linha Viva: ${dados.grampoLinhaViva || 'N/A'}
+• Estrutura: ${dados.estrutura || 'N/A'}
+• Rede Primária: ${dados.redePrimaria || 'N/A'}
+• Rede Secundária: ${dados.redeSecundaria || 'N/A'}
+• Afetação: ${dados.afetacao || 'N/A'}
+• Afetação do Elemento de Corte: ${dados.afetacaoElementoCorte || 'N/A'}
+• Observações: ${dados.observacoes || 'N/A'}
+
+👥 *EQUIPE:*
+• Equipe Necessária: ${dados.equipeNecessaria || 'N/A'}
+• Operador(a): ${dados.operador || 'N/A'}
+• Viatura: ${dados.primeiroRecurso || 'N/A'}
+
+📦 *MATERIAIS NECESSÁRIOS:*`;
+
+            if (dados.materiais && dados.materiais.length > 0) {
+                dados.materiais.forEach((material) => {
+                    texto += `\n• ${material}`;
+                });
+            } else {
+                texto += '\n• Nenhum material especificado';
+            }
+            
+            // Adicionar informação sobre fotos
+            if (uploadedPhotos.length > 0) {
+                texto += `\n\n📷 *FOTOS DO CAMPO:*\n• ${uploadedPhotos.length} foto(s) anexada(s)\n• ⚠️ As fotos devem ser enviadas manualmente após colar este texto`;
+            }
+            
+            texto += '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📱 *Enviado via Sistema de Relatórios*';
+            
+            return texto;
+        }
+
+        // Formatar data
+        function formatarData(dataHora) {
+            if (!dataHora) return 'N/A';
+            const [data, hora] = dataHora.split(' ');
+            if (!data || !hora) return dataHora;
+            const [dia, mes, ano] = data.split('/');
+            const [horas, minutos] = hora.split(':');
+            return `${dia}/${mes}/${ano} às ${horas}:${minutos}`;
+        }
+
+        // Copiar texto
+        function copiarTexto() {
+            // Validar se todas as quantidades estão preenchidas
+            if (!validarQuantidades()) {
+                showMessage('❌ Preencha todas as quantidades dos materiais antes de copiar!', 'error');
+                return;
+            }
+            
+            const dados = coletarDados();
+            const textoFormatado = formatarTextoParaWhatsApp(dados);
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textoFormatado).then(() => {
+                    textoCopiado = true; // Marcar que o texto foi copiado
+                    updatePDFButtonState(); // Atualizar estado do botão PDF
+                    showMessage('✅ Texto copiado com sucesso! Agora envie para o WhatsApp da bancada.', 'success');
+                }).catch(err => {
+                    console.error('Erro ao copiar:', err);
+                    fallbackCopyTextToClipboard(textoFormatado);
+                });
+            } else {
+                fallbackCopyTextToClipboard(textoFormatado);
+            }
+        }
+
+        // Fallback para copiar
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    textoCopiado = true; // Marcar que o texto foi copiado
+                    updatePDFButtonState(); // Atualizar estado do botão PDF
+                    showMessage('✅ Texto copiado com sucesso! Agora envie para o WhatsApp da bancada.', 'success');
+                } else {
+                    showMessage('❌ Erro ao copiar texto. Tente novamente.', 'error');
+                }
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+                showMessage('❌ Erro ao copiar texto. Tente novamente.', 'error');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // Baixar PDF
+        // Atualizar estado do botão PDF
+        function updatePDFButtonState() {
+            const pdfBtn = document.getElementById('pdfBtn');
+            if (textoCopiado) {
+                pdfBtn.disabled = false;
+                pdfBtn.style.opacity = '1';
+                pdfBtn.style.cursor = 'pointer';
+                pdfBtn.title = 'Clique para baixar o PDF';
+            } else {
+                pdfBtn.disabled = true;
+                pdfBtn.style.opacity = '0.5';
+                pdfBtn.style.cursor = 'not-allowed';
+                pdfBtn.title = 'Primeiro copie o texto para liberar o PDF';
+            }
+        }
+
+        function baixarPDF() {
+            // Verificar se o texto foi copiado primeiro
+            if (!textoCopiado) {
+                showMessage('❌ Primeiro copie o texto para liberar o download do PDF!', 'error');
+                return;
+            }
+            
+            // Validar se todas as quantidades estão preenchidas
+            if (!validarQuantidades()) {
+                showMessage('❌ Preencha todas as quantidades dos materiais antes de gerar o PDF!', 'error');
+                return;
+            }
+            
+            const button = document.getElementById('pdfBtn');
+            
+            try {
+                button.disabled = true;
+                button.innerHTML = '⏳ Gerando PDF...';
+                
+                const dados = coletarDados();
+                gerarPDF(dados);
+                
+                showMessage('✅ PDF gerado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                showMessage('❌ Erro ao gerar PDF. Tente novamente.', 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '📄 Baixar PDF';
+            }
+        }
+
+        // Gerar PDF
+        function gerarPDF(dados) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            let yPosition = 25;
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
+            
+            // Cabeçalho profissional
+            doc.setFillColor(30, 60, 114);
+            doc.rect(0, 0, pageWidth, 30, 'F');
+            
+            // Logo/Ícone do tipo de incidente
+            const iconMap = {
+                'TRAFO': '⚡',
+                'POSTE': '📡',
+                'VEGETAÇÃO': '🌳'
+            };
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${iconMap[dados.tipoIncidente] || '📋'} RELATÓRIO DE PENDÊNCIA - ${dados.tipoIncidente}`, pageWidth / 2, 12, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, pageWidth / 2, 20, { align: 'center' });
+            
+            yPosition = 40;
+            
+            const secoes = [
+                {
+                    titulo: 'IDENTIFICAÇÃO E LOCALIZAÇÃO',
+                    campos: [
+                        { label: 'Descrição', valor: dados.descricao || 'N/A' },
+                        { label: 'Causa', valor: dados.causa || 'N/A' },
+                        { label: 'Nº Incidência', valor: dados.incidencia || 'N/A' },
+                        { label: 'Data/Hora', valor: formatarData(dados.dataHora) || 'N/A' },
+                        { label: 'Endereço', valor: dados.endereco || 'N/A' },
+                        { label: 'Município', valor: dados.municipio || 'N/A' },
+                        { label: 'CSI', valor: dados.legenda || 'N/A' },
+                        { label: 'Potência do Trafo', valor: dados.potenciaTrafo || 'N/A' },
+                        { label: 'Alimentador', valor: dados.alimentador || 'N/A' },
+                        { label: 'Elem. de Corte', valor: dados.elemCorte || 'N/A' }
+                    ]
+                },
+                {
+                    titulo: 'DADOS TÉCNICOS',
+                    campos: [
+                        { label: 'Acesso', valor: dados.acesso || 'N/A' },
+                        { label: 'Grampo Linha Viva', valor: dados.grampoLinhaViva || 'N/A' },
+                        { label: 'Estrutura', valor: dados.estrutura || 'N/A' },
+                        { label: 'Rede Primária', valor: dados.redePrimaria || 'N/A' },
+                        { label: 'Rede Secundária', valor: dados.redeSecundaria || 'N/A' },
+                        { label: 'Afetação', valor: dados.afetacao || 'N/A' },
+                        { label: 'Afetação do Elemento de Corte', valor: dados.afetacaoElementoCorte || 'N/A' },
+                        { label: 'Observações', valor: dados.observacoes || 'N/A' }
+                    ]
+                },
+                {
+                    titulo: 'EQUIPE',
+                    campos: [
+                        { label: 'Equipe Necessária', valor: dados.equipeNecessaria || 'N/A' },
+                        { label: 'Operador(a)', valor: dados.operador || 'N/A' },
+                        { label: 'Viatura', valor: dados.primeiroRecurso || 'N/A' }
+                    ]
+                }
+            ];
+            
+            secoes.forEach(secao => {
+                if (yPosition > pageHeight - 60) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                // Título da seção com fundo colorido
+                doc.setFillColor(52, 152, 219);
+                doc.rect(margin, yPosition - 5, contentWidth, 12, 'F');
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text(secao.titulo, margin + 5, yPosition + 2);
+                
+                yPosition += 15;
+                
+                // Campos em tabela
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+                
+                secao.campos.forEach((campo, index) => {
+                    if (yPosition > pageHeight - 15) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    
+                    // Linha de fundo alternada
+                    if (index % 2 === 0) {
+                        doc.setFillColor(248, 249, 250);
+                        doc.rect(margin, yPosition - 2, contentWidth, 8, 'F');
+                    }
+                    
+                    // Label em negrito
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`${campo.label}:`, margin + 5, yPosition + 2);
+                    
+                    // Valor
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(campo.valor, margin + 70, yPosition + 2);
+                    
+                    yPosition += 10;
+                });
+                
+                yPosition += 10; // Espaço entre seções
+            });
+            
+            // Seção de Materiais
+            if (dados.materiais && dados.materiais.length > 0) {
+                if (yPosition > pageHeight - 60) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                // Título da seção Materiais
+                doc.setFillColor(39, 174, 96);
+                doc.rect(margin, yPosition - 5, contentWidth, 12, 'F');
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('MATERIAIS NECESSÁRIOS', margin + 5, yPosition + 2);
+                
+                yPosition += 15;
+                
+                // Lista de materiais
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(0, 0, 0);
+                
+                dados.materiais.forEach((material, index) => {
+                    if (yPosition > pageHeight - 15) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    
+                    // Linha de fundo alternada
+                    if (index % 2 === 0) {
+                        doc.setFillColor(248, 249, 250);
+                        doc.rect(margin, yPosition - 2, contentWidth, 8, 'F');
+                    }
+                    
+                    // Material sem numeração
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(material, margin + 5, yPosition + 2);
+                    
+                    yPosition += 10;
+                });
+                
+                yPosition += 10;
+            } else {
+                // Se não há materiais, mostrar mensagem
+                if (yPosition > pageHeight - 60) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                doc.setFillColor(39, 174, 96);
+                doc.rect(margin, yPosition - 5, contentWidth, 12, 'F');
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('MATERIAIS NECESSÁRIOS', margin + 5, yPosition + 2);
+                
+                yPosition += 15;
+                
+                doc.setTextColor(100, 100, 100);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'italic');
+                doc.text('Nenhum material especificado', margin + 5, yPosition + 2);
+                
+                yPosition += 15;
+            }
+            
+            // Seção de Fotos
+            if (uploadedPhotos.length > 0) {
+                if (yPosition > pageHeight - 60) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                // Título da seção Fotos
+                doc.setFillColor(155, 89, 182);
+                doc.rect(margin, yPosition - 5, contentWidth, 12, 'F');
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('FOTOS DO CAMPO', margin + 5, yPosition + 2);
+                
+                yPosition += 15;
+                
+                uploadedPhotos.forEach((photo, index) => {
+                    if (yPosition > pageHeight - 100) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    
+                    // Título da foto sem nome do arquivo
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(`Foto ${index + 1}`, margin + 5, yPosition);
+                    yPosition += 8;
+                    
+                    try {
+                        // Adicionar imagem ao PDF mantendo proporção natural
+                        // jsPDF automaticamente mantém a proporção quando passamos apenas width ou height
+                        const imgWidth = 150; // Largura máxima
+                        doc.addImage(photo.data, 'JPEG', margin + 5, yPosition, imgWidth, 0);
+                        
+                        // Calcular altura real da imagem adicionada
+                        const imgInfo = doc.getImageProperties(photo.data);
+                        const aspectRatio = imgInfo.height / imgInfo.width;
+                        const actualHeight = imgWidth * aspectRatio;
+                        
+                        yPosition += actualHeight + 15;
+                        
+                    } catch (error) {
+                        console.error('Erro ao adicionar foto ao PDF:', error);
+                        doc.setTextColor(220, 53, 69);
+                        doc.text('Erro ao carregar imagem', margin + 5, yPosition);
+                        yPosition += 15;
+                    }
+                });
+            }
+            
+            const nomeArquivo = `relatorio_pendencia_${dados.tipoIncidente.toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(nomeArquivo);
+        }
+
+        // Limpar formulário
+        function limparFormulario() {
+            if (confirm('Tem certeza que deseja limpar todos os dados preenchidos?')) {
+                document.getElementById('relatorioForm').reset();
+                
+                const materialsContainer = document.getElementById('materialsContainer');
+                materialsContainer.innerHTML = '';
+                
+                adicionarMaterial();
+                
+                const campoDataHora = document.getElementById('dataHora');
+                campoDataHora.value = '';
+                
+                const btnHoje = document.getElementById('btnHoje');
+                btnHoje.textContent = 'ADICIONAR HORA/DATA';
+                btnHoje.style.background = '';
+                
+                // Limpar fotos
+                uploadedPhotos = [];
+                const photoContainer = document.getElementById('photoPreviewContainer');
+                if (photoContainer) {
+                    photoContainer.innerHTML = '';
+                }
+                
+                // Limpar materiais personalizados
+                const customMaterialsContainer = document.getElementById('customMaterialsContainer');
+                if (customMaterialsContainer) {
+                    customMaterialsContainer.innerHTML = '';
+                }
+                
+                // Limpar campo OUTROS
+                const outrosMateriais = document.getElementById('outrosMateriais');
+                if (outrosMateriais) {
+                    outrosMateriais.value = '';
+                }
+                
+                // Resetar estado do botão PDF
+                textoCopiado = false;
+                updatePDFButtonState();
+                
+                showMessage('🗑️ Formulário limpo com sucesso!', 'success');
+            }
+        }
+
+        // Definir data/hora atual
+        function definirDataHoraAtual() {
+            const now = new Date();
+            const dia = String(now.getDate()).padStart(2, '0');
+            const mes = String(now.getMonth() + 1).padStart(2, '0');
+            const ano = now.getFullYear();
+            const horas = String(now.getHours()).padStart(2, '0');
+            const minutos = String(now.getMinutes()).padStart(2, '0');
+            
+            const dataHoraFormatada = `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+            
+            const campoDataHora = document.getElementById('dataHora');
+            campoDataHora.value = dataHoraFormatada;
+            
+            const btnHoje = document.getElementById('btnHoje');
+            const textoOriginal = btnHoje.textContent;
+            btnHoje.textContent = '✓ DEFINIDO';
+            btnHoje.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            
+            setTimeout(() => {
+                btnHoje.textContent = textoOriginal;
+            }, 2000);
+        }
+
+        // Mostrar mensagem
+        function showMessage(text, type) {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                message.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(message);
+                }, 300);
+            }, 3000);
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            window.scrollTo(0, 0);
+        });
+    </script>
+</body>
+</html>
