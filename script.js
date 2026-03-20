@@ -4,7 +4,6 @@ let incidentType = 'TRAFO'; // Tipo padrão
 
 // Lista de materiais (será preenchida com as opções que você fornecer)
 let materiaisOptions = [
-    // Estas opções serão substituídas pelas que você fornecer
     "ARRUELA QUAD AZ, 50X3X18MM,D410.03",
     "ARRUELA,QUAD AL 50X3X18MM, D904.02",
     "ARRUELA, RED AZ,36X3X18MM,D410.01",
@@ -65,27 +64,22 @@ let materiaisOptions = [
 
 // Inicializar formulário
 function initializeForm() {
-    // Adicionar primeira linha de material se não existir
     const container = document.getElementById('materialsContainer');
     if (container.children.length === 0) {
         adicionarMaterial();
     }
-    
-    // Atualizar lista de materiais
+
     atualizarListaMateriais();
 }
 
 // Configurar event listeners
 function setupEventListeners() {
-    // Botões principais
     document.getElementById('copiarBtn').addEventListener('click', copiarTexto);
     document.getElementById('pdfBtn').addEventListener('click', baixarPDF);
     document.getElementById('limparBtn').addEventListener('click', limparFormulario);
-    
-    // Botão adicionar material
+
     document.getElementById('addMaterialBtn').addEventListener('click', adicionarMaterial);
-    
-    // Botão HOJE para data/hora
+
     const btnHoje = document.getElementById('btnHoje');
     if (btnHoje) {
         btnHoje.addEventListener('click', definirDataHoraAtual);
@@ -95,49 +89,42 @@ function setupEventListeners() {
 // Atualizar lista de materiais em todos os inputs
 function atualizarListaMateriais() {
     const inputs = document.querySelectorAll('.material-select');
-    
+
     inputs.forEach(input => {
         const valorAtual = input.value;
         const datalistId = input.getAttribute('list');
         const datalist = document.getElementById(datalistId);
-        
+
         if (datalist) {
-            // Limpar opções existentes
             datalist.innerHTML = '';
-            
-            // Adicionar todas as opções
+
             materiaisOptions.forEach(material => {
                 const option = document.createElement('option');
                 option.value = material;
                 datalist.appendChild(option);
             });
         }
-        
-        // Restaurar valor se ainda existir
+
         input.value = valorAtual;
     });
 }
 
-
 // Adicionar nova linha de material
 function adicionarMaterial() {
     materialCounter++;
-    
+
     const container = document.getElementById('materialsContainer');
     const materialRow = document.createElement('div');
     materialRow.className = 'material-row';
-    
+
     materialRow.innerHTML = `
         <input list="materials-${materialCounter}" class="material-select" name="material_${materialCounter}" placeholder="Digite ou selecione o material" required>
-        <datalist id="materials-${materialCounter}">
-        </datalist>
+        <datalist id="materials-${materialCounter}"></datalist>
         <input type="number" class="quantity-input" name="quantity_${materialCounter}" placeholder="Qtd" min="1" required>
         <button type="button" class="remove-btn" onclick="removerMaterial(this)">X</button>
     `;
-    
+
     container.appendChild(materialRow);
-    
-    // Atualizar lista de materiais
     atualizarListaMateriais();
 }
 
@@ -147,25 +134,29 @@ function removerMaterial(button) {
     materialRow.remove();
 }
 
+// Retorna valor ou N/A
+function valorOuNA(valor) {
+    if (valor === undefined || valor === null) return 'N/A';
+    if (String(valor).trim() === '') return 'N/A';
+    return String(valor).trim();
+}
+
 // Coletar dados do formulário
 function coletarDados() {
     const form = document.getElementById('relatorioForm');
     const formData = new FormData(form);
     const dados = {};
-    
-    // Adicionar tipo de incidente
+
     dados.tipoIncidente = incidentType;
-    
-    // Coletar dados básicos
+
     for (let [key, value] of formData.entries()) {
         dados[key] = value;
     }
-    
-    // Coletar materiais
+
     dados.materiais = [];
     const materialInputs = document.querySelectorAll('.material-select');
     const quantityInputs = document.querySelectorAll('.quantity-input');
-    
+
     materialInputs.forEach((input, index) => {
         if (input.value && quantityInputs[index] && quantityInputs[index].value) {
             const material = input.value;
@@ -173,42 +164,46 @@ function coletarDados() {
             dados.materiais.push(`${quantity} ${material}`);
         }
     });
-    
+
     return dados;
 }
 
 // Formatar texto para WhatsApp
 function formatarTextoParaWhatsApp(dados) {
     const dataFormatada = formatarData(dados.dataHora);
-    
+
     let texto = `📋 *RELATÓRIO DE PENDÊNCIA - ${dados.tipoIncidente}*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📍 *IDENTIFICAÇÃO E LOCALIZAÇÃO:*
-• Descrição: ${dados.descricao || 'N/A'}
-• Causa: ${dados.causa || 'N/A'}
-• Nº Incidência: ${dados.incidencia || 'N/A'}
-• Data/Hora: ${dataFormatada}
-• Endereço: ${dados.endereco || 'N/A'}
-• Município: ${dados.municipio || 'N/A'}
-• Legenda: ${dados.legenda || 'N/A'}
-• Elem. de Corte: ${dados.elemCorte || 'N/A'}
+• Descrição: ${valorOuNA(dados.descricao)}
+• Causa: ${valorOuNA(dados.causa)}
+• Nº Incidência: ${valorOuNA(dados.incidencia)}
+• Data/Hora: ${valorOuNA(dataFormatada)}
+• Endereço: ${valorOuNA(dados.endereco)}
+• Município: ${valorOuNA(dados.municipio)}
+• Legenda: ${valorOuNA(dados.legenda)}
+• Elem. de Corte: ${valorOuNA(dados.elemCorte)}
 
 🔧 *DADOS TÉCNICOS:*
-• Acesso: ${dados.acesso || 'N/A'}
-• Potência Trafo: ${dados.potenciaTrafo || 'N/A'}
-• Para-Raio: ${dados.paraRaio || 'N/A'}
-• Proteção Primária: ${dados.protecaoPrimaria || 'N/A'}
-• Proteção Secundária: ${dados.protecaoSecundaria || 'N/A'}
-• Grampo Linha Viva: ${dados.grampoLinhaViva || 'N/A'}
-• Estrutura: ${dados.estrutura || 'N/A'}
-• Rede Primária: ${dados.redePrimaria || 'N/A'}
-• Rede Secundária: ${dados.redeSecundaria || 'N/A'}
+• Acesso: ${valorOuNA(dados.acesso)}
+• Potência Trafo: ${valorOuNA(dados.potenciaTrafo)}
+• Para-Raio: ${valorOuNA(dados.paraRaio)}
+• Proteção Primária: ${valorOuNA(dados.protecaoPrimaria)}
+• Proteção Secundária: ${valorOuNA(dados.protecaoSecundaria)}
+• Grampo Linha Viva: ${valorOuNA(dados.grampoLinhaViva)}
+• Estrutura: ${valorOuNA(dados.estrutura)}
+• Rede Primária: ${valorOuNA(dados.redePrimaria)}
+• Rede Secundária: ${valorOuNA(dados.redeSecundaria)}
+• Aterramento: ${valorOuNA(dados.aterramento)}
+• Elos estavam adequados? De quanto?: ${valorOuNA(dados.elosAdequados)}
+• Disjuntor (A): ${valorOuNA(dados.disjuntorA)}
+${dados.observacoes ? `• Observações: ${valorOuNA(dados.observacoes)}` : ''}
 
 👥 *EQUIPE:*
-• Equipe Necessária: ${dados.equipeNecessaria || 'N/A'}
-• Operador(a): ${dados.operador || 'N/A'}
-• 1° Recurso: ${dados.primeiroRecurso || 'N/A'}
+• Equipe Necessária: ${valorOuNA(dados.equipeNecessaria)}
+• Operador(a): ${valorOuNA(dados.operador)}
+• 1° Recurso: ${valorOuNA(dados.primeiroRecurso)}
 
 📦 *MATERIAIS NECESSÁRIOS:*`;
 
@@ -219,22 +214,22 @@ function formatarTextoParaWhatsApp(dados) {
     } else {
         texto += '\n• Nenhum material especificado';
     }
-    
+
     texto += '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📱 *Enviado via Sistema de Relatórios*';
-    
+
     return texto;
 }
 
 // Formatar data para exibição
 function formatarData(dataHora) {
     if (!dataHora) return 'N/A';
-    
+
     const [data, hora] = dataHora.split(' ');
     if (!data || !hora) return dataHora;
-    
+
     const [dia, mes, ano] = data.split('/');
     const [horas, minutos] = hora.split(':');
-    
+
     return `${dia}/${mes}/${ano} às ${horas}:${minutos}`;
 }
 
@@ -242,8 +237,7 @@ function formatarData(dataHora) {
 function copiarTexto() {
     const dados = coletarDados();
     const textoFormatado = formatarTextoParaWhatsApp(dados);
-    
-    // Tentar copiar para clipboard
+
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(textoFormatado).then(() => {
             showMessage('✅ Texto copiado com sucesso! Cole no WhatsApp.', 'success');
@@ -256,7 +250,7 @@ function copiarTexto() {
     }
 }
 
-// Fallback para copiar texto (navegadores mais antigos)
+// Fallback para copiar texto
 function fallbackCopyTextToClipboard(text) {
     const textArea = document.createElement('textarea');
     textArea.value = text;
@@ -266,7 +260,7 @@ function fallbackCopyTextToClipboard(text) {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     try {
         const successful = document.execCommand('copy');
         if (successful) {
@@ -278,21 +272,21 @@ function fallbackCopyTextToClipboard(text) {
         console.error('Erro ao copiar:', err);
         showMessage('❌ Erro ao copiar texto. Tente novamente.', 'error');
     }
-    
+
     document.body.removeChild(textArea);
 }
 
 // Baixar PDF
 function baixarPDF() {
     const button = document.getElementById('pdfBtn');
-    
+
     try {
         button.disabled = true;
         button.innerHTML = '⏳ Gerando PDF...';
-        
+
         const dados = coletarDados();
         gerarPDF(dados);
-        
+
         showMessage('✅ PDF gerado com sucesso!', 'success');
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
@@ -303,196 +297,196 @@ function baixarPDF() {
     }
 }
 
-// Função para limpar formulário
+// Limpar formulário
 function limparFormulario() {
     if (confirm('Tem certeza que deseja limpar todos os dados preenchidos?')) {
-        // Limpar formulário
         document.getElementById('relatorioForm').reset();
-        
-        // Limpar campos de material
+
         const materialsContainer = document.getElementById('materialsContainer');
         materialsContainer.innerHTML = '';
-        
-        // Adicionar primeira linha novamente
+
         adicionarMaterial();
-        
-        // Limpar campo de data/hora
+
         const campoDataHora = document.getElementById('dataHora');
         campoDataHora.value = '';
-        
-        // Restaurar botão HOJE
+
         const btnHoje = document.getElementById('btnHoje');
         btnHoje.textContent = 'HOJE';
         btnHoje.style.background = '';
-        
-        
+
         showMessage('🗑️ Formulário limpo com sucesso!', 'success');
     }
 }
 
 // Configurar data/hora atual como padrão
 function setupDateTimeDefault() {
-    // Não define automaticamente, aguarda o usuário clicar em "HOJE"
+    // Não define automaticamente
 }
 
-// Definir data e hora atual quando clicar em "HOJE"
+// Definir data e hora atual
 function definirDataHoraAtual() {
     const now = new Date();
-    
-    // Formatar para exibição em português
+
     const dia = String(now.getDate()).padStart(2, '0');
     const mes = String(now.getMonth() + 1).padStart(2, '0');
     const ano = now.getFullYear();
     const horas = String(now.getHours()).padStart(2, '0');
     const minutos = String(now.getMinutes()).padStart(2, '0');
-    
-    // Formato: DD/MM/AAAA HH:MM
+
     const dataHoraFormatada = `${dia}/${mes}/${ano} ${horas}:${minutos}`;
-    
-    // Atualizar o campo
+
     const campoDataHora = document.getElementById('dataHora');
     campoDataHora.value = dataHoraFormatada;
-    
-    // Feedback visual
+
     const btnHoje = document.getElementById('btnHoje');
     const textoOriginal = btnHoje.textContent;
     btnHoje.textContent = '✓ DEFINIDO';
     btnHoje.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
-    
-    // Restaurar após 2 segundos
+
     setTimeout(() => {
         btnHoje.textContent = textoOriginal;
     }, 2000);
-    
-    // Validar o campo
-    validateField(campoDataHora);
+
+    if (typeof validateField === 'function') {
+        validateField(campoDataHora);
+    }
+}
+
+// Escreve linha com quebra automática no PDF
+function addWrappedField(doc, label, value, xLabel, xValue, y, maxWidth, lineHeight) {
+    const safeValue = valorOuNA(value);
+    const lines = doc.splitTextToSize(safeValue, maxWidth);
+
+    doc.text(`${label}:`, xLabel, y);
+    doc.text(lines, xValue, y);
+
+    return y + (lines.length * lineHeight);
 }
 
 // Gerar PDF
 function gerarPDF(dados) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
-    // Configurações do PDF
+
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
     let yPosition = 20;
     const lineHeight = 7;
     const margin = 20;
-    
-    // Cabeçalho
-    doc.setFillColor(30, 60, 114); // Azul escuro
+    const xLabel = margin;
+    const xValue = margin + 60;
+    const maxWidth = pageWidth - xValue - 15;
+
+    doc.setFillColor(30, 60, 114);
     doc.rect(0, 0, pageWidth, 25, 'F');
-    
+
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text(`RELATÓRIO DE PENDÊNCIA - ${dados.tipoIncidente}`, pageWidth / 2, 15, { align: 'center' });
-    
+
     yPosition = 35;
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    
-    // Seções do relatório
+
     const secoes = [
         {
             titulo: 'IDENTIFICAÇÃO E LOCALIZAÇÃO',
             campos: [
-                { label: 'Descrição', valor: dados.descricao || 'N/A' },
-                { label: 'Causa', valor: dados.causa || 'N/A' },
-                { label: 'Nº Incidência', valor: dados.incidencia || 'N/A' },
-                { label: 'Data/Hora', valor: formatarData(dados.dataHora) || 'N/A' },
-                { label: 'Endereço', valor: dados.endereco || 'N/A' },
-                { label: 'Município', valor: dados.municipio || 'N/A' },
-                { label: 'Legenda', valor: dados.legenda || 'N/A' },
-                { label: 'Elem. de Corte', valor: dados.elemCorte || 'N/A' }
+                { label: 'Descrição', valor: dados.descricao },
+                { label: 'Causa', valor: dados.causa },
+                { label: 'Nº Incidência', valor: dados.incidencia },
+                { label: 'Data/Hora', valor: formatarData(dados.dataHora) },
+                { label: 'Endereço', valor: dados.endereco },
+                { label: 'Município', valor: dados.municipio },
+                { label: 'Legenda', valor: dados.legenda },
+                { label: 'Elem. de Corte', valor: dados.elemCorte }
             ]
         },
         {
             titulo: 'DADOS TÉCNICOS',
             campos: [
-                { label: 'Acesso', valor: dados.acesso || 'N/A' },
-                { label: 'Potência Trafo', valor: dados.potenciaTrafo || 'N/A' },
-                { label: 'Para-Raio', valor: dados.paraRaio || 'N/A' },
-                { label: 'Proteção Primária', valor: dados.protecaoPrimaria || 'N/A' },
-                { label: 'Proteção Secundária', valor: dados.protecaoSecundaria || 'N/A' },
-                { label: 'Grampo Linha Viva', valor: dados.grampoLinhaViva || 'N/A' },
-                { label: 'Estrutura', valor: dados.estrutura || 'N/A' },
-                { label: 'Rede Primária', valor: dados.redePrimaria || 'N/A' },
-                { label: 'Rede Secundária', valor: dados.redeSecundaria || 'N/A' }
+                { label: 'Acesso', valor: dados.acesso },
+                { label: 'Potência Trafo', valor: dados.potenciaTrafo },
+                { label: 'Para-Raio', valor: dados.paraRaio },
+                { label: 'Proteção Primária', valor: dados.protecaoPrimaria },
+                { label: 'Proteção Secundária', valor: dados.protecaoSecundaria },
+                { label: 'Grampo Linha Viva', valor: dados.grampoLinhaViva },
+                { label: 'Estrutura', valor: dados.estrutura },
+                { label: 'Rede Primária', valor: dados.redePrimaria },
+                { label: 'Rede Secundária', valor: dados.redeSecundaria },
+                { label: 'Aterramento', valor: dados.aterramento },
+                { label: 'Elos estavam adequados? De quanto?', valor: dados.elosAdequados },
+                { label: 'Disjuntor (A)', valor: dados.disjuntorA },
+                ...(dados.observacoes ? [{ label: 'Observações', valor: dados.observacoes }] : [])
             ]
         },
         {
             titulo: 'EQUIPE',
             campos: [
-                { label: 'Equipe Necessária', valor: dados.equipeNecessaria || 'N/A' },
-                { label: 'Operador(a)', valor: dados.operador || 'N/A' },
-                { label: '1° Recurso', valor: dados.primeiroRecurso || 'N/A' }
+                { label: 'Equipe Necessária', valor: dados.equipeNecessaria },
+                { label: 'Operador(a)', valor: dados.operador },
+                { label: '1° Recurso', valor: dados.primeiroRecurso }
             ]
         }
     ];
-    
-    // Adicionar seções
+
     secoes.forEach(secao => {
         if (yPosition > pageHeight - 40) {
             doc.addPage();
             yPosition = 20;
         }
-        
-        // Título da seção
+
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(52, 152, 219);
         doc.text(secao.titulo, margin, yPosition);
         yPosition += 10;
-        
-        // Campos da seção
+
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(0, 0, 0);
-        
+
         secao.campos.forEach(campo => {
             if (yPosition > pageHeight - 20) {
                 doc.addPage();
                 yPosition = 20;
             }
-            
-            doc.text(`${campo.label}:`, margin, yPosition);
-            doc.text(campo.valor, margin + 60, yPosition);
-            yPosition += lineHeight;
+
+            yPosition = addWrappedField(doc, campo.label, campo.valor, xLabel, xValue, yPosition, maxWidth, lineHeight);
         });
     });
-    
-    // Materiais
+
     if (dados.materiais && dados.materiais.length > 0) {
         if (yPosition > pageHeight - 40) {
             doc.addPage();
             yPosition = 20;
         }
-        
+
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(52, 152, 219);
         doc.text('MATERIAIS NECESSÁRIOS', margin, yPosition);
         yPosition += 10;
-        
+
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(0, 0, 0);
-        
+
         dados.materiais.forEach((material, index) => {
             if (yPosition > pageHeight - 20) {
                 doc.addPage();
                 yPosition = 20;
             }
-            
-            doc.text(`${index + 1}. ${material}`, margin, yPosition);
-            yPosition += lineHeight;
+
+            const linha = `${index + 1}. ${material}`;
+            const linhas = doc.splitTextToSize(linha, pageWidth - (margin * 2));
+            doc.text(linhas, margin, yPosition);
+            yPosition += linhas.length * lineHeight;
         });
     }
-    
-    // Salvar PDF
+
     const nomeArquivo = `relatorio_pendencia_${dados.tipoIncidente.toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(nomeArquivo);
 }
@@ -502,13 +496,13 @@ function showMessage(text, type) {
     const message = document.createElement('div');
     message.className = `message ${type}`;
     message.textContent = text;
-    
+
     document.body.appendChild(message);
-    
+
     setTimeout(() => {
         message.classList.add('show');
     }, 100);
-    
+
     setTimeout(() => {
         message.classList.remove('show');
         setTimeout(() => {
@@ -517,23 +511,21 @@ function showMessage(text, type) {
     }, 3000);
 }
 
-// Função para voltar à tela inicial
+// Voltar à tela inicial
 function voltarHome() {
     localStorage.removeItem('incidentType');
     window.location.href = 'home.html';
 }
 
-// Função para atualizar o indicador de tipo de incidente
+// Atualizar indicador de tipo
 function updateIncidentIndicator() {
     const indicator = document.getElementById('incidentTypeIndicator');
     const typeIcon = document.getElementById('typeIcon');
     const typeText = document.getElementById('typeText');
-    
-    // Remover classes anteriores
+
     indicator.className = 'incident-type-indicator';
-    
-    // Configurar baseado no tipo
-    switch(incidentType) {
+
+    switch (incidentType) {
         case 'TRAFO':
             typeIcon.textContent = '⚡';
             typeText.textContent = 'TRAFO';
@@ -552,27 +544,23 @@ function updateIncidentIndicator() {
     }
 }
 
-// Inicialização quando a página carrega
+// Inicialização
 document.addEventListener('DOMContentLoaded', function() {
-    // Garantir que a página carregue no topo
     window.scrollTo(0, 0);
-    
-    // Verificar se há tipo de incidente salvo
+
     const savedType = localStorage.getItem('incidentType');
     if (savedType) {
         incidentType = savedType;
         updateIncidentIndicator();
     } else {
-        // Se não há tipo salvo, redirecionar para home
         window.location.href = 'home.html';
         return;
     }
-    
+
     initializeForm();
     setupEventListeners();
     setupDateTimeDefault();
-    
-    // Garantir scroll para o topo após um pequeno delay
+
     setTimeout(() => {
         window.scrollTo(0, 0);
     }, 100);

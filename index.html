@@ -480,6 +480,25 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="aterramento">ATERRAMENTO:</label>
+                    <select id="aterramento" name="aterramento">
+                        <option value="">Selecione...</option>
+                        <option value="SIM">SIM</option>
+                        <option value="NÃO">NÃO</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="elosAdequados">ELOS ESTAVAM ADEQUADOS? DE QUANTO?</label>
+                    <input type="text" id="elosAdequados" name="elosAdequados" placeholder="Digite a informação dos elos">
+                </div>
+
+                <div class="form-group">
+                    <label for="disjuntorA">DISJUNTOR (A):</label>
+                    <input type="text" id="disjuntorA" name="disjuntorA" placeholder="Digite a amperagem do disjuntor">
+                </div>
+
+                <div class="form-group">
                     <label for="observacoes">OBSERVAÇÕES:</label>
                     <textarea id="observacoes" name="observacoes" placeholder="Digite suas observações técnicas" rows="3"></textarea>
                 </div>
@@ -1024,6 +1043,9 @@
 • Rede Secundária: ${dados.redeSecundaria || 'N/A'}
 • Afetação: ${dados.afetacao || 'N/A'}
 • Afetação do Elemento de Corte: ${dados.afetacaoElementoCorte || 'N/A'}
+• Aterramento: ${dados.aterramento || 'N/A'}
+• Elos Estavam Adequados? De Quanto?: ${dados.elosAdequados || 'N/A'}
+• Disjuntor (A): ${dados.disjuntorA || 'N/A'}
 • Observações: ${dados.observacoes || 'N/A'}
 
 👥 *EQUIPE:*
@@ -1222,6 +1244,9 @@
                         { label: 'Rede Secundária', valor: dados.redeSecundaria || 'N/A' },
                         { label: 'Afetação', valor: dados.afetacao || 'N/A' },
                         { label: 'Afetação do Elemento de Corte', valor: dados.afetacaoElementoCorte || 'N/A' },
+                        { label: 'Aterramento', valor: dados.aterramento || 'N/A' },
+                        { label: 'Elos Estavam Adequados? De Quanto?', valor: dados.elosAdequados || 'N/A' },
+                        { label: 'Disjuntor (A)', valor: dados.disjuntorA || 'N/A' },
                         { label: 'Observações', valor: dados.observacoes || 'N/A' }
                     ]
                 },
